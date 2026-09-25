@@ -9,10 +9,7 @@ them with FLUX.1-Kontext, score the results, and visualize how the latent
 distribution shifts.
 
 > **Research prototype.** This code is released to support reproducibility of
-> our experiments. Immunization is **not** a guarantee of protection. It is
-> evaluated against one editing model under specific settings, and it may not
-> survive resizing, compression, screenshots, other editing models, or future
-> countermeasures. Do not rely on it to protect sensitive images.
+> our experiments. Immunization is **not** a 100% guarantee of protection.
 
 ---
 
