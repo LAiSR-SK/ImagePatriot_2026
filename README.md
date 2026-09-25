@@ -112,31 +112,60 @@ directly. Hugging Face's own client reads it.
 
 ## Dataset
 
-<!-- TODO before publishing: add the dataset download link and its license. -->
-> **Download:** _link coming soon._
+The dataset is included in this repository under `images/`:
 
-The dataset contains clean images in three categories (`animal`, `human`,
-`object`), binary masks for the `human` images, and one edit prompt per image.
-The prompts are already in this repository:
+| Category | Images | Formats | Masks |
+|----------|-------:|---------|------:|
+| `animal` | 50 | PNG | none |
+| `human` | 200 | PNG | 200 (one per image) |
+| `object` | 50 | JPEG, PNG | none |
 
 ```
-src/prompts/run_log_animal.csv    # filename,prompt
+images/clean/animal/<images>
+images/clean/human/<images>
+images/clean/object/<images>
+images/masks/mask_<image stem>.png      # human images only
+```
+
+Each image has one edit prompt, stored in a CSV of `filename,prompt` rows:
+
+```
+src/prompts/run_log_animal.csv
 src/prompts/run_log_human.csv
 src/prompts/run_log_object.csv
 ```
 
-After downloading, place the files like this:
-
-```
-src/immunization/inputs/clean/animal/<images>
-src/immunization/inputs/clean/human/<images>
-src/immunization/inputs/clean/object/<images>
-src/immunization/masks/mask_<image stem>.png      # human images only
-```
-
 Filenames must match the CSVs **exactly, including the extension**. Some
 object images share a name and differ only by extension (`image0003.jpg` and
-`image0003.jpeg` are different photos with different prompts).
+`image0003.jpeg` are different photos with different prompts). Names such as
+`0018 (1).png` are separate images, not duplicates. Do not rename them.
+
+<!-- TODO before publishing: document where the images come from and the license they are released under. -->
+> **Source and license:** the provenance and license of these images are still
+> being confirmed and will be documented here. Until then, please use them only
+> to reproduce the experiments in this repository, and do not redistribute them.
+
+### Put the images where the scripts read them
+
+The pipeline scripts read clean images from `src/immunization/inputs/clean/`
+and masks from `src/immunization/masks/`. Copy the dataset there before
+step 1:
+
+**Linux**
+
+```bash
+mkdir -p src/immunization/inputs
+cp -r images/clean src/immunization/inputs/clean
+cp -r images/masks src/immunization/masks
+```
+
+**Windows (PowerShell)**
+
+```powershell
+New-Item -ItemType Directory -Force src/immunization/inputs | Out-Null
+Copy-Item -Recurse images/clean src/immunization/inputs/clean
+Copy-Item -Recurse images/masks src/immunization/masks
+```
 
 ---
 
