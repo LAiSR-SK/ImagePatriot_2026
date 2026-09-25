@@ -164,7 +164,6 @@ python src/immunization/immunize_batch.py --method hmax --mask no_mask --epsilon
 | `--method` *(required)* | `hmax`, `hmin`, `both` | |
 | `--mask` *(required)* | `no_mask`, `mask`, `both` (masked runs are `human` only) | |
 | `--epsilon` | one or more of `4 8 16 32` | all |
-| `--model` | `flux`, `instruct_pix2pix`, `sd15` (whose VAE to attack) | `flux` |
 | `--input` | folder of `<category>/` clean images | `src/immunization/inputs/clean` |
 | `--masks` | folder of `mask_<stem>.png` files | `src/immunization/masks` |
 | `--output` | output root | `src/immunization/outputs` |
@@ -203,18 +202,17 @@ run log. You need to run it **twice**:
 
 ```bash
 # edits of the immunized images
-python src/editing/batch_edit.py --method both --mode standard --mask both \
+python src/editing/batch_edit.py --method both --mask both \
     --input src/immunization/outputs
 
 # reference edits of the clean images (--mask does not apply here)
-python src/editing/batch_edit.py --method clean --mode standard \
+python src/editing/batch_edit.py --method clean \
     --input src/immunization/inputs
 ```
 
 | Flag | Values | Notes |
 |------|--------|-------|
 | `--method` *(required)* | `hmax`, `hmin`, `both`, `clean` | `both` = `hmax` + `hmin` |
-| `--mode` *(required)* | `standard`, `attack` | use `standard`. `attack` edits `_attacked` / `_multistep` / `_onestep` variants, which this pipeline does not produce |
 | `--mask` | `mask`, `no_mask`, `both` | required unless `--method clean` |
 | `--input` | root holding `<method>/…/<mask>/<category>/` or `clean/<category>/` | default `src/editing/inputs` |
 
@@ -326,7 +324,6 @@ python src/metrics/visualize_latent_batch.py \
 
 | Flag | Values | Default |
 |------|--------|---------|
-| `--model` | `flux`, `instruct_pix2pix`, `sd15` (whose VAE encodes the images) | `flux` |
 | `--scope` | `leaf` (per folder), `epsilon` (pooled per method/ε), `both` | `both` |
 | `--method`, `--epsilon`, `--mask`, `--category` | comma-separated filters, e.g. `--epsilon 4,8` | all |
 | `--output-dir` | where figures go | `src/metrics/latent_figures_updated` |
@@ -335,12 +332,9 @@ python src/metrics/visualize_latent_batch.py \
 **Output:**
 
 ```
-<output-dir>/<model>/per_leaf/latent_distribution_<method>_eps<E>_<mask>_<category>.png
-<output-dir>/<model>/per_epsilon/latent_distribution_<method>_eps<E>.png
+<output-dir>/flux/per_leaf/latent_distribution_<method>_eps<E>_<mask>_<category>.png
+<output-dir>/flux/per_epsilon/latent_distribution_<method>_eps<E>.png
 ```
-
-Use `--model flux` (the default) to visualize the VAE the images were
-immunized against.
 
 ---
 
@@ -400,7 +394,6 @@ before use. Some, including FLUX.1-Kontext-dev, restrict commercial use.
 
 | Used by | Model |
 |---------|-------|
-| editing, immunization (default), visualization (default) | [`black-forest-labs/FLUX.1-Kontext-dev`](https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev) |
-| optional alternative VAEs (`--model`) | [`timbrooks/instruct-pix2pix`](https://huggingface.co/timbrooks/instruct-pix2pix), [`stable-diffusion-v1-5/stable-diffusion-v1-5`](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5) |
+| immunization, editing, visualization | [`black-forest-labs/FLUX.1-Kontext-dev`](https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev) |
 | CLIP similarity | [`openai/clip-vit-base-patch32`](https://huggingface.co/openai/clip-vit-base-patch32) |
 | LPIPS metric (via `piq`) | pretrained LPIPS weights fetched by `piq` |

@@ -31,7 +31,6 @@ MAX_SIZE = 512
 QUANT_VRAM_THRESHOLD_GB = 40.0
 MODEL_ID = "black-forest-labs/FLUX.1-Kontext-dev"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-ATTACK_SUFFIXES = ["_attacked", "_multistep", "_onestep"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -42,9 +41,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--method", choices=list(METHOD_DIRS) + ["both"], required=True,
                         help="hmax / hmin: immunized images (both = hmax and hmin). "
                              "clean: the un-immunized originals, for the reference edits.")
-    parser.add_argument("--mode", choices=["standard", "attack"], required=True,
-                        help="standard: edit the images named in the run log. "
-                             "attack: edit their _attacked/_multistep/_onestep variants.")
     parser.add_argument("--mask", choices=sorted(VALID_MASK_TYPES) + ["both"],
                         help="Which mask-type folders to process. Required for hmax/hmin; "
                              "not used with --method clean.")
@@ -98,24 +94,6 @@ def find_category_dirs(parent: Path, mask_selection: set[str]) -> list[tuple[Pat
         else:
             results.extend(find_category_dirs(child, mask_selection))
     return results
-
-
-def split_attack_suffix(path: Path) -> tuple[str, str | None]:
-    """image_0_attacked.png -> ("image_0", "_attacked"); image_0.png -> ("image_0", None)."""
-    for suffix in ATTACK_SUFFIXES:
-        if path.stem.endswith(suffix):
-            return path.stem[: -len(suffix)], suffix
-    return path.stem, None
-
-
-def lookup_prompt(base_stem: str, ext: str, prompts: dict[str, str]) -> str | None:
-    """Exact filename first. Otherwise fall back to the stem, but only when it is
-    unambiguous -- some run logs reuse a stem across extensions (image0003.jpg / .jpeg)."""
-    exact = prompts.get(f"{base_stem}{ext}")
-    if exact is not None:
-        return exact
-    matches = [p for name, p in prompts.items() if Path(name).stem == base_stem]
-    return matches[0] if len(matches) == 1 else None
 
 
 def list_images(folder: Path) -> list[Path]:
@@ -177,7 +155,6 @@ def main() -> int:
     if not INPUT_DIR.is_dir():
         print(f"error: --input is not a directory: {INPUT_DIR}", file=sys.stderr)
         return 2
-    mode = args.mode
     mask_selection = set(VALID_MASK_TYPES) if args.mask == "both" else {args.mask}
     methods = IMMUNIZED_METHODS if args.method == "both" else [args.method]
     method_names = {METHOD_DIRS[m] for m in methods}
@@ -207,14 +184,13 @@ def main() -> int:
 
             # Driven by what is in the folder, not by the run log, so a folder
             # holding any subset of the dataset is processed without noise.
+            # Matching is by exact filename: some run logs reuse a stem across
+            # extensions for different images (image0003.jpg / image0003.jpeg).
             prompts = dict(run_log)
             for src in list_images(category_dir):
-                base_stem, attack_suffix = split_attack_suffix(src)
-                if (mode == "attack") != (attack_suffix is not None):
-                    continue  # standard wants clean images, attack wants variants
-                prompt = lookup_prompt(base_stem, src.suffix, prompts)
+                prompt = prompts.get(src.name)
                 if prompt is None:
-                    print(f"  skip  {src.name} (no unambiguous match in run log for '{category}')")
+                    print(f"  skip  {src.name} (not in run log for '{category}')")
                     skipped += 1
                     continue
                 dst = out_dir / src.name
