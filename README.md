@@ -9,7 +9,7 @@ them with FLUX.1-Kontext, score the results, and visualize how the latent
 distribution shifts.
 
 > **Research prototype.** This code is released to support reproducibility of
-> our experiments. Immunization is **not** a 100% guarantee of protection.
+> our experiments. 
 
 ---
 
