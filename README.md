@@ -1,4 +1,4 @@
-# ImagePatriot 2026
+# ImagePatriot: Distribution-Based Image Immunization Against Malicious  Diffusion Editing
 
 Research code for **image immunization**: adding a small, bounded perturbation
 to a photo so that diffusion-based editors have a harder time editing it
