@@ -57,7 +57,7 @@ because the pinned PyTorch build requires CUDA.
 ### 1. Get the code and create a virtual environment
 
 ```bash
-git clone <this-repository-url> ImagePatriot_2026
+git clone https://github.com/LAiSR-SK/ImagePatriot_2026.git ImagePatriot_2026
 cd ImagePatriot_2026
 ```
 
